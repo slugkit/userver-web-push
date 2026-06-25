@@ -100,6 +100,18 @@ struct Client::Impl {
         : http_client(context.FindComponent<userver::components::HttpClient>())
         , credentials(Credentials::FromConfig(config))
         , request_timeout(config["request-timeout"].As<std::chrono::milliseconds>(kDefaultRequestTimeout)) {
+        // The default credential is optional: a consumer that only ever calls
+        // the per-credential Send(creds, ...) overload (e.g. a multi-tenant
+        // dispatcher with per-app VAPID keys) can register the client with no
+        // private-key-pem/public-key/subject and skip validation entirely.
+        const bool has_default_credential = !credentials.private_key_pem.empty() || !credentials.public_key.empty() ||
+                                            !credentials.subject.empty();
+        if (!has_default_credential) {
+            LOG_INFO() << "webpush-client: no default credential configured; per-credential Send only";
+            return;
+        }
+
+        // When any default field is set, all three are required.
         if (credentials.private_key_pem.empty()) {
             throw std::runtime_error("webpush-client: private-key-pem is not configured (set VAPID_PRIVATE_KEY_PEM)");
         }
