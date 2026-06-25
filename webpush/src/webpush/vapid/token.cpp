@@ -12,6 +12,12 @@ namespace {
 
 constexpr auto kTokenLifetime = std::chrono::hours{12};
 
+auto Base64UrlEncode(std::string_view data) -> std::string {
+    return userver::crypto::base64::Base64UrlEncode(data, userver::crypto::base64::Pad::kWithout);
+}
+
+}  // namespace
+
 auto ExtractOrigin(std::string_view url) -> std::string {
     // Extract scheme + host from URL (e.g. "https://fcm.googleapis.com")
     auto scheme_end = url.find("://");
@@ -25,12 +31,6 @@ auto ExtractOrigin(std::string_view url) -> std::string {
     }
     return std::string{url.substr(0, path_start)};
 }
-
-auto Base64UrlEncode(std::string_view data) -> std::string {
-    return userver::crypto::base64::Base64UrlEncode(data, userver::crypto::base64::Pad::kWithout);
-}
-
-}  // namespace
 
 auto GenerateAuthHeader(
     std::string_view endpoint,

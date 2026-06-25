@@ -5,6 +5,11 @@
 
 namespace webpush::vapid {
 
+/// Extract the origin (scheme + host[:port]) from a push endpoint URL — the
+/// value used as the VAPID JWT `aud`. A generated header is valid for every
+/// endpoint sharing this origin, so callers can use it as a token cache key.
+auto ExtractOrigin(std::string_view url) -> std::string;
+
 /// Generate a VAPID Authorization header value (RFC 8292).
 /// @param endpoint Push service endpoint URL (aud is derived from its origin)
 /// @param subject Contact URI (e.g. "mailto:admin@example.com")
