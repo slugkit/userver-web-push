@@ -160,7 +160,7 @@ properties:
         description: Base64url-encoded uncompressed P-256 public key
     subject:
         type: string
-        description: Contact URI (mailto: or https:)
+        description: 'Contact URI (mailto: or https:)'
     request-timeout:
         type: string
         description: HTTP request timeout
