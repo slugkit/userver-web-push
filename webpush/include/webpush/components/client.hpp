@@ -30,7 +30,7 @@ public:
     ) const -> SendResult;
 
 private:
-    constexpr static auto kImplSize = 112UL;
+    constexpr static auto kImplSize = 288UL;
     constexpr static auto kImplAlign = 8UL;
     struct Impl;
     userver::utils::FastPimpl<Impl, kImplSize, kImplAlign> impl_;
