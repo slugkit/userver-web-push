@@ -16,13 +16,19 @@ constexpr std::size_t kCekLength = 16;
 constexpr std::size_t kNonceLength = 12;
 constexpr std::size_t kIkmLength = 32;
 
-auto BuildInfo(std::string_view type, std::string_view subscriber_pubkey, std::string_view server_pubkey)
-    -> std::string {
-    // "Content-Encoding: <type>\0\1"
+/// RFC 8188 §2.2 key-derivation info: the label followed by a single 0x00.
+///
+/// The 0x01 counter byte that HKDF-Expand appends is NOT part of this — HKDF
+/// supplies it. Appending it here too derives the key from
+/// "…aes128gcm\0\x01\x01", producing a CEK and nonce no conforming receiver can
+/// reproduce, so every browser silently discards the push. Nothing upstream
+/// notices: the push service relays without decrypting and answers 201.
+///
+/// Unlike RFC 8291's key_info, this info carries no public keys.
+auto BuildInfo(std::string_view type) -> std::string {
     std::string info = "Content-Encoding: ";
     info += type;
     info += '\0';
-    info += '\1';
     return info;
 }
 
@@ -79,10 +85,10 @@ auto EncryptPayload(
     auto salt = userver::crypto::GenerateRandomBlock(kSaltSize);
 
     // Step 5: Derive content encryption key (CEK) and nonce
-    auto cek_info = BuildInfo("aes128gcm", subscriber_pubkey, ephemeral.public_key_raw);
+    auto cek_info = BuildInfo("aes128gcm");
     auto cek = hkdf::DeriveKey(salt, ikm, cek_info, kCekLength);
 
-    auto nonce_info = BuildInfo("nonce", subscriber_pubkey, ephemeral.public_key_raw);
+    auto nonce_info = BuildInfo("nonce");
     auto nonce = hkdf::DeriveKey(salt, ikm, nonce_info, kNonceLength);
 
     // Step 6: Pad and encrypt
