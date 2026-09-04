@@ -51,6 +51,7 @@ if(WEBPUSH_BUILD_TESTS)
         tests/hkdf_test.cpp
         tests/aes_gcm_test.cpp
         tests/encrypt_test.cpp
+        tests/decrypt_roundtrip_test.cpp
         tests/vapid_test.cpp
         tests/notification_test.cpp
     )
